@@ -13,14 +13,14 @@ class RandomWalk():
         changed: change to block properties after this move
         position: new position after this move'''
 
-        def __init__(self, weight: float, age: int, changed: dict, position: int) -> None:
+        def __init__(self, weight: float, t: int, changed: dict, position: int) -> None:
             self.weight = weight
-            self.age = age
+            self.t = t
             self.changed = changed
             self.position = position
 
     def __init__(self, random_seed: str = None):
-        self.age = 0  # steps of simulation so far
+        self.t = 0  # steps of simulation so far
         self.changed = dict()  # current block properties that are not default
         self.position = 0  # current step of the walker
         self.random_seed = random_seed  # used to make pseudoranodm choices.
@@ -34,35 +34,35 @@ class RandomWalk():
         else:
             return self.default_property(n)
 
-    def choose_move(self):
+    def choose_move(self) -> Move:
         # get moves
-        steps = list(self.available_steps())
-        steps.sort(key=lambda x: x.position)
+        moves = list(self.available_moves())
+        moves.sort(key=lambda x: x.position)
 
         # choose a move
         random.seed(self.random_seed)
-        step = random.choices(steps, weights=[x.weight for x in steps])[0]
+        move = random.choices(moves, weights=[x.weight for x in moves])[0]
 
-        return step
+        return move
 
-    def do_step(self, step: Move):
+    def do_move(self, move: Move):
         # update
-        self.age = step.age
-        self.changed.update(step.changed)
-        self.position = step.position
+        self.t = move.t
+        self.changed.update(move.changed)
+        self.position = move.position
 
-    def available_steps(self):
+    def available_moves(self):
         raise NotImplementedError()
 
 
 class SimpleSymmetricRandomWalk(RandomWalk):
-    def available_steps(self):
+    def available_moves(self):
         Move = RandomWalk.Move
         n = self.position
         for i in [-1, 1]:  # relative motions
             yield Move(
                 weight=1,
-                age=self.age + 1,
+                t=self.t + 1,
                 changed=dict(),  # no block property to update
                 position=n+i
             )
@@ -79,7 +79,7 @@ class LinearEdgeReinforcedRandomWalk(RandomWalk):
 if __name__ == "__main__":
     rw = SimpleSymmetricRandomWalk()
     for i in range(10):
-        step = rw.choose_move()
-        rw.do_step(step)
-        print(step.position, step.weight, step.age, step.changed)
+        move = rw.choose_move()
+        rw.do_move(move)
+        print(move.position, move.weight, move.t, move.changed)
     print(rw.changed)
