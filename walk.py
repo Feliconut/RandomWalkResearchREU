@@ -73,7 +73,30 @@ class SimpleAsymmetricRandomWalk(RandomWalk):
 
 
 class LinearEdgeReinforcedRandomWalk(RandomWalk):
-    pass
+    class BlockProperty(RandomWalk.BlockProperty, int):
+        pass
+
+    def default_property(self, n) -> BlockProperty:
+        return self.__class__.BlockProperty(1)
+
+    def available_moves(self):
+        Move = RandomWalk.Move
+        n = self.position
+        left, right = self.get_property(n-1), self.get_property(n)
+
+        # left
+        yield Move(
+            weight=left,
+            t=self.t + 1,
+            changed={n-1: left+1},
+            position=n-1)
+
+        # right
+        yield Move(
+            weight=right,
+            t=self.t + 1,
+            changed={n: right+1},
+            position=n+1)
 
 
 if __name__ == "__main__":
