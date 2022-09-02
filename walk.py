@@ -33,7 +33,7 @@ class RandomWalk():
                                       RandomWalk.EdgeProperty] = modified_edges
             self.position: int = position
 
-    def __init__(self, _random_seed: str = None):
+    def __init__(self, _random_seed: bytes = None) -> None:
         # steps of simulation so far
         self.t: int = 0
         # current edge properties that are not default
@@ -41,11 +41,8 @@ class RandomWalk():
         # current step of the walker
         self.position: int = 0
         # used to make pseudoranodm choices.
-        self._random_seed: str = _random_seed
-
-    def __reset_random(self):
-        if self._random_seed is not None:
-            random.seed(self._random_seed)
+        self._random_seed: bytes =\
+            _random_seed if _random_seed else random.randbytes(32)
 
     def get_edge_property(self, position: int) -> EdgeProperty:
         if position in self.modified_edges:
@@ -59,8 +56,14 @@ class RandomWalk():
         steps.sort(key=lambda x: x.position)
 
         # choose a step
-        self.__reset_random()
+
+        # use t to make sure each step is different
+        random.seed(self._random_seed + self.t.to_bytes(32, 'big'))
+
         step = random.choices(steps, weights=[x.weight for x in steps])[0]
+
+        # reset the random seed
+        random.seed()
 
         return step
 
@@ -91,7 +94,8 @@ class SimpleSymmetricRandomWalk(RandomWalk):
 
 
 class SimpleAsymmetricRandomWalk(RandomWalk):
-    pass
+    def __init__(self, _random_seed: bytes = None):
+        super().__init__()
 
 
 class LinearEdgeReinforcedRandomWalk(RandomWalk):
