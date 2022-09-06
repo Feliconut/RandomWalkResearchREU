@@ -1,11 +1,13 @@
 # %%
 import walk
-from experiment import Experiment
+from experiment import SingleExperiment
 # %%
-test = Experiment(walk.SimpleAsymmetricRandomWalk(0.8))
-test.generate(1, 20)
+test = SingleExperiment(walk.SimpleAsymmetricRandomWalk(0.8))
+test.generate(5, 20)
+
 # %%
 test.data
 # %%
-test.plot()
+test.plot(n_trials=[1, 2, 3, 4, 5])
+
 # %%
