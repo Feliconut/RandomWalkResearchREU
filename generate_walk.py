@@ -13,7 +13,7 @@ class Experiment():
         for i in range(length):
             step = self.walk.choose_step()
             self.walk.take_step(step)
-            trial.append(int(step.position))
+            trial.append(float(step.position))
 
         return trial
 
@@ -29,5 +29,4 @@ class Experiment():
             self.data.plot(legend=True)
 
         else:
-            self.data.plot(x=num_trial, legend=True)
-            
+            self.data.plot(y=num_trial, legend=True)
