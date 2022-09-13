@@ -45,3 +45,9 @@ plt.plot(range, scipy.stats.norm.pdf(range, 0, 1))
 # %%
 test.test()
 # %%
+test = SingleExperiment(walk.SimpleSymmetricRandomWalk())
+# %%
+test.run(length = 100000)
+# %%
+test.plot()
+    # %%
