@@ -1,10 +1,11 @@
+# %%
 # Assumptions
 # 1. The process is defined in [0,1].
 # 2. The process accepts as input a float number.
-# %%
 import numpy as np
 import scipy
 from matplotlib import pyplot as plt
+from statsmodels.graphics.tsaplots import plot_acf
 
 def process(x: float) -> float:
     return 2*x
@@ -16,6 +17,10 @@ def weierstrass(x,Nvar = 100):
     return we
 
 process = weierstrass
+# We use the weierstrass function as a test case.
+# It is continuous, not differentiable, and does
+# not have other properties of BM such as normality
+# and memorylessness.
 # %%
 # Test 1: Continuity
 # Pick 10 random points. For each point, pick a random direction and
@@ -58,13 +63,45 @@ plt.legend()
 
 # %%
 # Test 3: Normality of steps
+# We split the interval [0,1] into n intervals. We then test 
+# the normality of the steps.
+# To pass the test, the steps should be normally distributed,
+# with mean 0 and variance 1/n.
+# Graphically, the shape of the histogram should stabalize to 
+# a standard bell curve.
 
+ps = []
+for n in [1e2,1e3,1e4, 1e5]:
+    x = np.linspace(0,1,int(n))
+    y = np.vectorize(process)(x)
+    diff = y[1:] - y[:-1]
+    *_, p = scipy.stats.normaltest(diff)
+    ps.append(p)
+    plt.hist(diff*(n**0.5), alpha = 0.6, 
+        density = True,
+        label = f'{n:.0e} steps')
 
-
+plt.legend()
+plt.title('Test 3: Normality of steps')
+plt.xlabel('dy/(dx)^0.5')
+plt.show()
+plt.plot(ps)
+plt.title('p-value for normal test')
+# %%
 # Test 4: Memorylessness
+# We split the interval [0,1] into n intervals. We then test
+# the memorylessness of the discrete process (x1,x2,x3,...,xn)
+# by testing the independence of (x1,x2) and (x2,x3).
+# To pass the test, the first-order difference should be white noise.
+
+plot_acf(
+    np.diff(
+    np.vectorize(process)(np.linspace(0,1,10000))
+    ), lags = 100)
 
 
 # Test 5: Scale invariance
 # We pick a subinterval and stretch it to the whole interval.
-# The process should be the same.
+# All test results above should be stable and make no significant change.
+
 # %%
