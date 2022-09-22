@@ -69,12 +69,20 @@ class MultipleExperiment():
         )
 
     def test(self):
+        slc = self.data.iloc[-1, :]
+
         print(f"Test Results for {self.n_trials} trials of length {self.length}")
-        statistic, pvalue = stats.normaltest(self.data.iloc[-1, :])
+        statistic, pvalue = stats.normaltest(slc)
         print(f"(K-Squared) Statistic: {statistic}, p-value: {pvalue}")
-        statistic, pvalue = stats.chisquare(self.data.iloc[-1, :])
+        statistic, pvalue = stats.chisquare(slc)
         print(f"(Chi-Square) Statistic: {statistic}, p-value: {pvalue}")
-        statistic, pvalue = stats.kstest(self.data.iloc[-1, :], stats.norm.cdf)
+
+        # Normalize Data
+        mean = np.mean(slc)
+        std = np.std(slc)
+        slc = (slc - mean) / std
+
+        statistic, pvalue = stats.kstest(slc, stats.norm.cdf)
         print(f"(K-S) Statistic: {statistic}, p-value: {pvalue}")
 
     def hist_plot(self):
