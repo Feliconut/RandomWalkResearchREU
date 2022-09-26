@@ -7,8 +7,21 @@ import scipy
 from matplotlib import pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 
+W = np.load('ssrw-1e8.npy')
+NW = len(W)
+
+# %%
+
 def process(x: float) -> float:
     return 2*x
+
+def ssrw_process(x:float) -> float:
+    if x < 0: 
+        raise ValueError('x must be in [0,1]')
+    if x > 1:
+        raise ValueError('x must be in [0,1]')
+    x = x # fix zero devision
+    return W[int(x*NW)-1]*(NW)**(-1/2)
 
 def weierstrass(x,Nvar = 100):
     we=0
@@ -16,11 +29,16 @@ def weierstrass(x,Nvar = 100):
         we=we+np.cos(3**n*np.pi*x)/2**n
     return we
 
-process = weierstrass
+process = ssrw_process
 # We use the weierstrass function as a test case.
 # It is continuous, not differentiable, and does
 # not have other properties of BM such as normality
 # and memorylessness.
+# %%
+# Plot the process
+x = np.linspace(0,1,10000)
+y = np.vectorize(process)(x)
+plt.plot(x,y)
 # %%
 # Test 1: Continuity
 # Pick 10 random points. For each point, pick a random direction and
@@ -28,7 +46,7 @@ process = weierstrass
 
 n = 1000
 for eps in [1e-1, 1e-2, 1e-3, 1e-4] :
-    x = np.random.rand(n)
+    x = np.random.rand(n) * 0.8 + 0.1
     dx = eps
     x1 = x - dx/2
     x2 = x + dx/2
@@ -47,7 +65,7 @@ plt.legend()
 
 n = 10
 eps = np.array([1e-1, 1e-2, 1e-3, 1e-4, 1e-5])
-x = np.random.rand(n)
+x = np.random.rand(n) * 0.8 + 0.1
 dx = eps
 x1 = np.tile(x, (5,1)) - np.tile(dx/2, (n,1)).T
 x2 = np.tile(x, (5,1)) + np.tile(dx/2, (n,1)).T
@@ -75,15 +93,18 @@ for n in [1e2,1e3,1e4, 1e5]:
     x = np.linspace(0,1,int(n))
     y = np.vectorize(process)(x)
     diff = y[1:] - y[:-1]
+    res = diff*(n**0.5)
+    np.clip(res, -5, 5, out=res)
     *_, p = scipy.stats.normaltest(diff)
     ps.append(p)
-    plt.hist(diff*(n**0.5), alpha = 0.6, 
+    plt.hist(res, alpha = 0.6, 
         density = True,
         label = f'{n:.0e} steps')
 
 plt.legend()
 plt.title('Test 3: Normality of steps')
 plt.xlabel('dy/(dx)^0.5')
+
 plt.show()
 plt.plot(ps)
 plt.title('p-value for normal test')
