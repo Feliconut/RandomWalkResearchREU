@@ -1,5 +1,15 @@
 # Project Log
 
+## 2022-09-23
+
+- [ ] Vectorize the random number generation,
+- [ ] Bit-wise storage of generated works, vectorize the query, piecewise summary.
+
+Other ideas:
+- Random seed for step generation
+- Hashmap for path generation
+
+
 ## 2022-09-12
 
 Tasks due before next meeting:

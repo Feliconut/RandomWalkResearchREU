@@ -3,18 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 # %% Simple Random Walk
-n = 1000
+n = 100000
 p = 0.5
 A = np.random.rand(n, n) > p
 W = np.cumsum(
     (A.astype('int') - 
     (~A).astype('int')
     ).flatten())
-plt.plot(W)
-plt.xlabel('step')
-plt.title('simple random walk, p = 0.5, n = 1e6')
+np.save('ssrw-1e10.npy',W,)
+# plt.plot(W)
+# plt.xlabel('step')
+# plt.title('simple random walk, p = 0.5, n = 1e6')
 
-stats.normaltest(W)
 # %% Simple Random Walk, Scaled
 n = 1000
 p = 0.5
