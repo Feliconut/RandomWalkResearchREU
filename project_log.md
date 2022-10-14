@@ -4,14 +4,22 @@
 
 Tasks due before Oct 7 2022:
 
-- [ ] Understand Lipchitz and Holder continuity
-- [ ] Implement and run test for Holder continuity
+
+*Theoretical background:*
+- [x] Review mathematical detail for Autocorrelation function 
+- [x] Understand Lipchitz and Hölder continuity
+
+*Improvements on BM test:*
+- [x] Implement and run test for Hölder continuity (see `study note 4` for theoretical details)
+- [ ] Implement Scale Invariance Test (Choose a small section and see if the distributions are identical up to proper scaling)
+
+*Application of BM test:*
 - [ ] Run BM test on RWs with different step distribution
     - [ ] Uniform
     - [ ] Normal
     - [ ] Exponential
     - [ ] Cauchy
-- [ ] Implement Scale Invariance Test
+
 
 ## 2022-09-23
 
