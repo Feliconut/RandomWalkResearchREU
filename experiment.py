@@ -3,6 +3,7 @@ import walk
 import pandas as pd
 import numpy as np
 from scipy import stats
+import tests
 from matplotlib import pyplot as plt
 
 
@@ -68,7 +69,7 @@ class MultipleExperiment():
             figsize=(20, 6)
         )
 
-    def test(self):
+    def norm_test(self):
         slc = self.data.iloc[-1, :]
 
         print(f"Test Results for {self.n_trials} trials of length {self.length}")
@@ -82,7 +83,7 @@ class MultipleExperiment():
         std = np.std(slc)
         slc = (slc - mean) / std
 
-        statistic, pvalue = stats.kstest(slc, stats.norm.cdf)
+        statistic, pvalue = stats.kstest(slc, stats.norm.cdf, N=len(slc))
         print(f"(K-S) Statistic: {statistic}, p-value: {pvalue}")
 
     def hist_plot(self):
