@@ -44,6 +44,7 @@ class MultipleExperiment():
 
     def run(self):
         self.data = np.asarray(self.single_walk())[np.newaxis, :].T
+
         for _ in range(1, self.n_trials):
             path = self.single_walk()
             self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
@@ -52,8 +53,8 @@ class MultipleExperiment():
 
     def single_walk(self) -> List[int]:
         path = []
-
         walk = self.new_walk()
+
         for _ in range(self.length):
             step = walk.choose_step()
             walk.take_step(step)
