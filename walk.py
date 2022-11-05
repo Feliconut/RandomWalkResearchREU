@@ -149,11 +149,43 @@ class LinearEdgeReinforcedRandomWalk(RandomWalk):
             position=n+1)
 
 
-# %%
-if __name__ == "__main__":
-    rw = SimpleAsymmetricRandomWalk(0.8)
-    for i in range(20):
-        step = rw.choose_step()
-        rw.take_step(step)
-        print(step.position, step.weight, step.t, step.modified_edges)
-    print([rw.get_edge_property(i).__repr__() for i in range(-10, 10)])
+class SelfInteractingRandomWalk(RandomWalk):
+    class EdgeProperty(RandomWalk.EdgeProperty, int):
+        '''
+            This is the number of times this edge is visited.
+        '''
+        @classmethod
+        def default(cls, position: int):
+            return cls(1)
+
+    def __init__(self, weight_function, _random_seed: bytes = None) -> None:
+        # steps of simulation so far
+        self.t: int = 0
+        # current edge properties that are not default
+        self.modified_edges: Dict[int, RandomWalk.EdgeProperty] = dict()
+        # current step of the walker
+        self.position: int = 0
+        # used to make pseudoranodm choices.
+        self._random_seed: bytes =\
+            _random_seed if _random_seed else random.randbytes(32)
+        # some callable used to modify weights
+        self.weight_function = weight_function
+
+    def available_steps(self):
+        Step = RandomWalk.Step
+        n = self.position
+        left, right = self.get_edge_property(n-1), self.get_edge_property(n)
+
+        # left
+        yield Step(
+            weight=self.weight_function(left),
+            t=self.t + 1,
+            modified_edges={n-1: left+1},
+            position=n-1)
+
+        # right
+        yield Step(
+            weight=self.weight_function(right),
+            t=self.t + 1,
+            modified_edges={n: right+1},
+            position=n+1)
