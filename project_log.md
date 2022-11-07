@@ -1,9 +1,12 @@
 # Project Log
 
+## 2022-11-08
+
+Work done on brownian motion test.
+Study note entry for Hölder Exponent test: see `study note 04`. However, the proof contains an error: The scale invariance property is wrongly stated. To be fixed in future.
+- [ ] Fix proof of Hölder Exponent test.
+
 ## 2022-09-26
-
-Tasks due before Oct 7 2022:
-
 
 *Theoretical background:*
 - [x] Review mathematical detail for Autocorrelation function 
@@ -11,14 +14,14 @@ Tasks due before Oct 7 2022:
 
 *Improvements on BM test:*
 - [x] Implement and run test for Hölder continuity (see `study note 4` for theoretical details)
-- [ ] Implement Scale Invariance Test (Choose a small section and see if the distributions are identical up to proper scaling)
+- [x] Implement Scale Invariance Test (Choose a small section and see if the distributions are identical up to proper scaling) (K-S Test on Empirical Distributions)
 
 *Application of BM test:*
-- [ ] Run BM test on RWs with different step distribution
-    - [ ] Uniform
-    - [ ] Normal
-    - [ ] Exponential
-    - [ ] Cauchy
+- [x] Run BM test on RWs with different step distribution
+    - [x] Uniform
+    - [x] Normal
+    - [x] Exponential
+    - [x] Cauchy
 
 
 ## 2022-09-23
