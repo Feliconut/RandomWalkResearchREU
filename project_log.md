@@ -6,6 +6,15 @@ Work done on brownian motion test.
 Study note entry for Hölder Exponent test: see `study note 04`. However, the proof contains an error: The scale invariance property is wrongly stated. To be fixed in future.
 - [ ] Fix proof of Hölder Exponent test.
 
+*Overhaul of statistical tests:*
+- [x] K-S Scale Invariance Test
+- [ ] Chi-Square test for independent steps
+- [ ] Hölder Exponent test (make more rigorous)
+- [ ] Jump Test
+- [ ] Arcsin Test for time greater than 0
+
+Added chapter on statistical tests to `study note 05`.
+
 ## 2022-09-26
 
 *Theoretical background:*
