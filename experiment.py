@@ -31,10 +31,11 @@ class SingleExperiment():
 
 
 class MultipleExperiment():
-    def __init__(self, walk_cls: type, n_trials: int = None, length: int = None, *args, **kwargs):
+    def __init__(self, walk_cls: type, n_trials: int = None, length: int = None, chunk_size: int = 10, *args, **kwargs):
         self.walk_cls = walk_cls
         self.n_trials = n_trials
         self.length = length
+        self.chunk_size = chunk_size
         self.data = None
         self.args = args
         self.kwargs = kwargs
@@ -47,12 +48,15 @@ class MultipleExperiment():
         return self.walk_cls(*self.args, **self.kwargs)
 
     def run(self):
-        self.data = np.asarray(self.single_walk())[np.newaxis, :].T
-
-        for _ in range(1, self.n_trials):
+        for i in range(self.n_trials):
             path = self.single_walk()
             self.accumulate_statistics(path)
-            self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
+
+            if i == 0:
+                self.data = np.asarray(path)[np.newaxis, :].T
+
+            else:
+                self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
 
         self.data = pd.DataFrame(self.data)
 
@@ -68,8 +72,8 @@ class MultipleExperiment():
         return path
 
     def accumulate_statistics(self, path):
-        # self.stats['jump'].append(tests.calc_jump_test(path))
-        print('A')
+        self.stats['jump'].append(tests.calc_jump_test(path, self.chunk_size))
+
         time_above_one = 0
 
         for pos in path:
@@ -84,6 +88,8 @@ class MultipleExperiment():
         print(f"Brownian Motion Test Results for {self.n_trials} trials of length {self.length}")
         statistic, pvalue = tests.arcsine_test(self.stats['asin'])
         print(f"Arcsine Test Statistic: {statistic}, p-value:{pvalue}")
+        statistic, pvalue = tests.jump_test(self.stats['jump'], self.chunk_size, self.length)
+        print(f"Jump Test Statistic: {statistic}, p-value:{pvalue}")
 
     def norm_test(self):
         slc = self.data.iloc[-1, :]
