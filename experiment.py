@@ -38,6 +38,10 @@ class MultipleExperiment():
         self.data = None
         self.args = args
         self.kwargs = kwargs
+        self.stats = {
+            'jump' : [],
+            'asin' : []
+        }
 
     def new_walk(self) -> walk.RandomWalk:
         return self.walk_cls(*self.args, **self.kwargs)
@@ -47,6 +51,7 @@ class MultipleExperiment():
 
         for _ in range(1, self.n_trials):
             path = self.single_walk()
+            self.accumulate_statistics(path)
             self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
 
         self.data = pd.DataFrame(self.data)
@@ -62,13 +67,23 @@ class MultipleExperiment():
 
         return path
 
-    def plot(self, trial_indices: List[int]):
-        self.data[trial_indices].plot(
-            legend=True,
-            title=f"{self.walk_cls.__name__}({self.n_trials} trials, {self.length} steps)",
-            alpha=0.7,
-            figsize=(20, 6)
-        )
+    def accumulate_statistics(self, path):
+        # self.stats['jump'].append(tests.calc_jump_test(path))
+        print('A')
+        time_above_one = 0
+
+        for pos in path:
+            if pos > 0:
+                time_above_one += 1
+
+        self.stats['asin'].append(time_above_one / self.length)
+
+        return
+
+    def bw_test(self):
+        print(f"Brownian Motion Test Results for {self.n_trials} trials of length {self.length}")
+        statistic, pvalue = tests.arcsine_test(self.stats['asin'])
+        print(f"Arcsine Test Statistic: {statistic}, p-value:{pvalue}")
 
     def norm_test(self):
         slc = self.data.iloc[-1, :]
@@ -86,6 +101,14 @@ class MultipleExperiment():
 
         statistic, pvalue = stats.kstest(slc, stats.norm.cdf, N=len(slc))
         print(f"(K-S) Statistic: {statistic}, p-value: {pvalue}")
+
+    def plot(self, trial_indices: List[int]):
+        self.data[trial_indices].plot(
+            legend=True,
+            title=f"{self.walk_cls.__name__}({self.n_trials} trials, {self.length} steps)",
+            alpha=0.7,
+            figsize=(20, 6)
+        )
 
     def hist_plot(self):
         self.data.iloc[-1, :].hist()
