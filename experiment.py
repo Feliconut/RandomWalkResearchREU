@@ -40,40 +40,37 @@ class MultipleExperiment():
         self.args = args
         self.kwargs = kwargs
         self.stats = {
-            'jump' : [],
-            'asin' : []
+            'jump': [],
+            'asin': []
         }
 
     def new_walk(self) -> walk.RandomWalk:
         return self.walk_cls(*self.args, **self.kwargs)
 
     def run(self):
+        self.data = [0] * self.n_trials
+
         for i in range(self.n_trials):
             path = self.single_walk()
             self.accumulate_statistics(path)
+            self.data[i] = path
 
-            if i == 0:
-                self.data = np.asarray(path)[np.newaxis, :].T
-
-            else:
-                self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
-
+        self.data = np.asarray(self.data).T
         self.data = pd.DataFrame(self.data)
 
     def single_walk(self) -> List[int]:
-        path = []
+        path = [0] * self.length
         walk = self.new_walk()
 
-        for _ in range(self.length):
+        for i in range(self.length):
             step = walk.choose_step()
             walk.take_step(step)
-            path.append(float(step.position))
+            path[i] = (float(step.position))
 
         return path
 
     def accumulate_statistics(self, path):
         self.stats['jump'].append(tests.calc_jump_test(path, self.chunk_size))
-
         time_above_one = 0
 
         for pos in path:
