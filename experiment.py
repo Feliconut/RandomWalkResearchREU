@@ -7,41 +7,18 @@ import tests
 from matplotlib import pyplot as plt
 
 
-class SingleExperiment():
-    def __init__(self, walk: walk.RandomWalk):
-        self.walk = walk
-        self.data = pd.DataFrame()
-
-    def run(self, length: int) -> List[int]:
-        path = []
-
-        for i in range(length):
-            step = self.walk.choose_step()
-            self.walk.take_step(step)
-            path.append(float(step.position))
-
-        self.data[1] = path
-
-    def plot(self, ):
-        self.data.plot(legend=True)
-
-    def test(self):
-        statistic, pvalue = stats.normaltest(self.data)
-        print(f"Statistic: {statistic}, p-value: {pvalue}")
-
-
 class MultipleExperiment():
     def __init__(self, walk_cls: type, n_trials: int = None, length: int = None, chunk_size: int = 10, *args, **kwargs):
         self.walk_cls = walk_cls
         self.n_trials = n_trials
         self.length = length
         self.chunk_size = chunk_size
-        self.data = None
+        self.data = [0] * self.n_trials
         self.args = args
         self.kwargs = kwargs
         self.stats = {
-            'jump' : [],
-            'asin' : []
+            'jump': [],
+            'asin': []
         }
 
     def new_walk(self) -> walk.RandomWalk:
@@ -51,29 +28,24 @@ class MultipleExperiment():
         for i in range(self.n_trials):
             path = self.single_walk()
             self.accumulate_statistics(path)
+            self.data[i] = path
 
-            if i == 0:
-                self.data = np.asarray(path)[np.newaxis, :].T
-
-            else:
-                self.data = np.concatenate((self.data, np.asarray(path)[np.newaxis, :].T), axis=1)
-
+        self.data = np.asarray(self.data).T
         self.data = pd.DataFrame(self.data)
 
     def single_walk(self) -> List[int]:
-        path = []
+        path = [0] * self.length
         walk = self.new_walk()
 
-        for _ in range(self.length):
+        for i in range(self.length):
             step = walk.choose_step()
             walk.take_step(step)
-            path.append(float(step.position))
+            path[i] = (float(step.position))
 
         return path
 
     def accumulate_statistics(self, path):
         self.stats['jump'].append(tests.calc_jump_test(path, self.chunk_size))
-
         time_above_one = 0
 
         for pos in path:
@@ -118,3 +90,28 @@ class MultipleExperiment():
 
     def hist_plot(self):
         self.data.iloc[-1, :].hist()
+
+
+''' Not Needed, Deprecate?
+class SingleExperiment():
+    def __init__(self, walk: walk.RandomWalk):
+        self.walk = walk
+        self.data = pd.DataFrame()
+
+    def run(self, length: int) -> List[int]:
+        path = []
+
+        for i in range(length):
+            step = self.walk.choose_step()
+            self.walk.take_step(step)
+            path.append(float(step.position))
+
+        self.data[1] = path
+
+    def plot(self, ):
+        self.data.plot(legend=True)
+
+    def test(self):
+        statistic, pvalue = stats.normaltest(self.data)
+        print(f"Statistic: {statistic}, p-value: {pvalue}")
+'''

@@ -151,9 +151,9 @@ class LinearEdgeReinforcedRandomWalk(RandomWalk):
 
 class SelfInteractingRandomWalk(RandomWalk):
     class EdgeProperty(RandomWalk.EdgeProperty, int):
-        '''
-            This is the number of times this edge is visited.
-        '''
+        """
+        This is the number of times this edge is visited.
+        """
         @classmethod
         def default(cls, position: int):
             return cls(1)
