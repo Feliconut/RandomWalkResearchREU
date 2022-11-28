@@ -7,36 +7,13 @@ import tests
 from matplotlib import pyplot as plt
 
 
-class SingleExperiment():
-    def __init__(self, walk: walk.RandomWalk):
-        self.walk = walk
-        self.data = pd.DataFrame()
-
-    def run(self, length: int) -> List[int]:
-        path = []
-
-        for i in range(length):
-            step = self.walk.choose_step()
-            self.walk.take_step(step)
-            path.append(float(step.position))
-
-        self.data[1] = path
-
-    def plot(self, ):
-        self.data.plot(legend=True)
-
-    def test(self):
-        statistic, pvalue = stats.normaltest(self.data)
-        print(f"Statistic: {statistic}, p-value: {pvalue}")
-
-
 class MultipleExperiment():
     def __init__(self, walk_cls: type, n_trials: int = None, length: int = None, chunk_size: int = 10, *args, **kwargs):
         self.walk_cls = walk_cls
         self.n_trials = n_trials
         self.length = length
         self.chunk_size = chunk_size
-        self.data = None
+        self.data = [0] * self.n_trials
         self.args = args
         self.kwargs = kwargs
         self.stats = {
@@ -48,8 +25,6 @@ class MultipleExperiment():
         return self.walk_cls(*self.args, **self.kwargs)
 
     def run(self):
-        self.data = [0] * self.n_trials
-
         for i in range(self.n_trials):
             path = self.single_walk()
             self.accumulate_statistics(path)
@@ -115,3 +90,28 @@ class MultipleExperiment():
 
     def hist_plot(self):
         self.data.iloc[-1, :].hist()
+
+
+''' Not Needed, Deprecate?
+class SingleExperiment():
+    def __init__(self, walk: walk.RandomWalk):
+        self.walk = walk
+        self.data = pd.DataFrame()
+
+    def run(self, length: int) -> List[int]:
+        path = []
+
+        for i in range(length):
+            step = self.walk.choose_step()
+            self.walk.take_step(step)
+            path.append(float(step.position))
+
+        self.data[1] = path
+
+    def plot(self, ):
+        self.data.plot(legend=True)
+
+    def test(self):
+        statistic, pvalue = stats.normaltest(self.data)
+        print(f"Statistic: {statistic}, p-value: {pvalue}")
+'''
