@@ -7,7 +7,7 @@ import scipy
 from matplotlib import pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf
 
-W = np.load('exp-rw-1e8.npy')
+W = np.load('ssrw-1e8.npy')
 NW = len(W)
 
 # %%
@@ -170,7 +170,8 @@ def ks_test(x, y):
             j += 1
     return d, v
 
-def run_scaled_ks_test(length1 ,length2, plot=True):
+
+def run_handmade_scaled_ks_test(length1 ,length2, plot=True):
     # perform k-s test on the whole process and half of it
     # the result should be the same
     x1 = np.linspace(0,1,int(1/length1))
@@ -199,35 +200,43 @@ def run_scaled_ks_test(length1 ,length2, plot=True):
         plt.show()
     return res, v
 
-run_scaled_ks_test(0.1, 0.001)
-
+# run_handmade_scaled_ks_test(0.1, 0.001)
+# %%
 # heatmap for different scales
-
+from scipy.stats import ks_2samp
 def heatmap():
-    n_scales = 6
-    repeat = 10
-    res = np.zeros((n_scales, n_scales))
-    res_std = np.zeros((n_scales, n_scales))
+    n_scales = 5 # n_scales = k means we split into 10^(k+1) intervals
+    samples = [np.diff(np.vectorize(process)(
+        np.linspace(0,1,10**(i+1)))) / (10**(-i-1))**0.5 for i in range(n_scales)]
+        # samples for different scales
+    # plot histogram for each sample
+    for i in range(n_scales):
+        plt.hist(samples[i], alpha = 0.6, 
+            # density = True,
+            # bin length = 0.1
+            bins = np.arange(-5,5,0.1),
+            label = f'{10**(i+1):.0e} steps')
+        # plt.xlim(-5,5)
+        plt.title(f'Scaled step distribution, interval length = {10**(-i-1):.0e}')
+        plt.show()
+    # samples = [sample[1000:3000] if len(sample) > 5000 else sample for sample in samples]
+    p_values = np.zeros((n_scales, n_scales))
     for i in range(n_scales):
         for j in range(n_scales):
-            ds = []
-            for _ in range(repeat):
-                # randomly generate x1, x2
-                d = run_scaled_ks_test(
-                    10**(-i-1), 
-                    10**(-j-1), plot=False)[0]
-                ds.append(d)
-            res[i,j] = np.mean(ds)
-            res_std[i,j] = np.std(ds)
-    plt.imshow(res)
+            p_values[i,j] = ks_2samp(samples[i], samples[j])[1]
+    plt.imshow(p_values, alpha=0.3)
     plt.colorbar()
-    plt.xlabel('-log10(length of interval) - 1')
-    plt.title(f'K-S test result for different scales, averaged over {repeat} runs')
-    plt.show()
-    plt.imshow(res_std)
-    plt.colorbar()
-    plt.xlabel('-log10(length of interval) - 1')
-    plt.title(f'Standard deviation of K-S test result for different scales, averaged over {repeat} runs')
+    # blues color scheme
+    plt.set_cmap('Blues')
+    # put a cross on all pixels with p-value < 0.05, put a hollow circle otherwise
+    for i in range(n_scales):
+        for j in range(n_scales):
+            if p_values[i,j] < 0.05:
+                plt.scatter(i,j, marker = 'x', color = 'r')
+            else:
+                plt.scatter(i,j, marker = 'o', edgecolors = 'b', facecolors = 'none')
+    plt.xlabel('log10(number of steps) - 1')
+    plt.title(f'K-S test result for different scales')
     plt.show()
 heatmap()
 
