@@ -18,7 +18,7 @@ class MultipleExperiment():
         self.kwargs = kwargs
         self.stats = {
             'jump': [],
-            'asin': []
+            'ta0': []
         }
 
     def new_walk(self) -> walk.RandomWalk:
@@ -52,7 +52,7 @@ class MultipleExperiment():
             if pos > 0:
                 time_above_one += 1
 
-        self.stats['asin'].append(time_above_one / self.length)
+        self.stats['ta0'].append(time_above_one / self.length)
 
         return
 

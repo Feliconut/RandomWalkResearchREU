@@ -20,5 +20,5 @@ def jump_test(statistics, chunk_size, length):
     return sp.stats.normaltest(norm_stats)
 
 
-def arcsine_test(statistics):
-    return sp.stats.kstest(statistics, sp.stats.arcsine.cdf, N=len(statistics))
+def arcsine_test(statistics, a, b):
+    return sp.stats.kstest(statistics, sp.stats.beta.cdf, N=len(statistics), args=(a, b))
