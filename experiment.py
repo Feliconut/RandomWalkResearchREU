@@ -1,4 +1,6 @@
 from typing import Any, Callable, List
+from collections import OrderedDict
+from tqdm import trange
 import walk
 import pandas as pd
 import numpy as np
@@ -18,14 +20,15 @@ class MultipleExperiment():
         self.kwargs = kwargs
         self.stats = {
             'jump': [],
-            'ta0': []
+            'ta0': [],
+            'ta0_dict': OrderedDict(),
         }
 
     def new_walk(self) -> walk.RandomWalk:
         return self.walk_cls(*self.args, **self.kwargs)
 
     def run(self):
-        for i in range(self.n_trials):
+        for i in trange(self.n_trials):
             path = self.single_walk()
             self.accumulate_statistics(path)
             self.data[i] = path
@@ -53,6 +56,7 @@ class MultipleExperiment():
                 time_above_one += 1
 
         self.stats['ta0'].append(time_above_one / self.length)
+        self.stats['ta0_dict'][time_above_one / self.length] = self.stats['ta0_dict'].get(time_above_one / self.length, 0) + 1
 
         return
 
