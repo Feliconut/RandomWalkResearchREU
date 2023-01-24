@@ -2,13 +2,15 @@ import scipy
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
+from collections import Counter
 
 
 class BetaFitter:
     def __init__(self, data):
-        self.data = OrderedDict(sorted(data.items()))
-        self.x = np.asarray(list(self.data.keys()), dtype=np.float64)[1:-1]
-        self.y = np.asarray(list(self.data.values()), dtype=np.float64)[1:-1]
+        self.og_data = data
+        self.data = OrderedDict(sorted(Counter(data).items()))
+        self.x = np.asarray(list(self.data.keys()), dtype=np.float32)[1:-1]
+        self.y = np.asarray(list(self.data.values()), dtype=np.float32)[1:-1]
 
         self.params = None
         self.params_cov = None
@@ -17,13 +19,13 @@ class BetaFitter:
     def func_beta(x, a):
         return scipy.stats.beta.pdf(x, a, a)
 
-    def fit(self, p0):
-        self.params, self.params_cov, _, msg, _ = scipy.optimize.curve_fit(self.func_beta, self.x, self.y, p0,
-                                                                           full_output=True)
-        print(msg)
+    def fit(self, p0, method):
+        self.params, self.params_cov = scipy.optimize.curve_fit(self.func_beta, self.x, self.y, p0,
+                                                                method=method)
+        print(self.params)
 
-    def plot(self):
-        plt.bar(self.x, self.y, width=0.01, color=['r'])
+    def plot(self, bins):
+        plt.hist(self.og_data, bins=bins, density=True)
         plt.plot(self.x, self.func_beta(self.x, *self.params), label='fit')
         plt.legend(loc='best')
         plt.show()

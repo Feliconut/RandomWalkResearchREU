@@ -21,17 +21,17 @@ class MultipleExperiment():
         self.stats = {
             'jump': [],
             'ta0': [],
-            'ta0_dict': OrderedDict(),
         }
 
     def new_walk(self) -> walk.RandomWalk:
         return self.walk_cls(*self.args, **self.kwargs)
 
-    def run(self):
+    def run(self, store_date=True):
         for i in trange(self.n_trials):
             path = self.single_walk()
-            self.accumulate_statistics(path)
-            self.data[i] = path
+
+            if store_date:
+                self.data[i] = path
 
         self.data = np.asarray(self.data).T
         self.data = pd.DataFrame(self.data)
@@ -39,26 +39,20 @@ class MultipleExperiment():
     def single_walk(self) -> List[int]:
         path = [0] * self.length
         walk = self.new_walk()
+        time_above_one = 0
 
         for i in range(self.length):
             step = walk.choose_step()
             walk.take_step(step)
             path[i] = (float(step.position))
 
-        return path
-
-    def accumulate_statistics(self, path):
-        self.stats['jump'].append(tests.calc_jump_test(path, self.chunk_size))
-        time_above_one = 0
-
-        for pos in path:
-            if pos > 0:
+            if path[i] > 0:
                 time_above_one += 1
 
-        self.stats['ta0'].append(time_above_one / self.length)
-        self.stats['ta0_dict'][time_above_one / self.length] = self.stats['ta0_dict'].get(time_above_one / self.length, 0) + 1
+        time_above_one /= self.length
+        self.stats['ta0'].append(time_above_one)
 
-        return
+        return path
 
     def bw_test(self):
         print(f"Brownian Motion Test Results for {self.n_trials} trials of length {self.length}")
