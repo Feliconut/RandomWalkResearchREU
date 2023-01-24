@@ -1,6 +1,5 @@
 from typing import Any, Callable, List
 from collections import OrderedDict
-from tqdm import trange
 import walk
 import pandas as pd
 import numpy as np
@@ -27,7 +26,7 @@ class MultipleExperiment():
         return self.walk_cls(*self.args, **self.kwargs)
 
     def run(self, store_date=True):
-        for i in trange(self.n_trials):
+        for i in range(self.n_trials):
             path = self.single_walk()
 
             if store_date:

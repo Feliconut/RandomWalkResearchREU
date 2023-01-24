@@ -156,7 +156,7 @@ class SelfInteractingRandomWalk(RandomWalk):
         """
         @classmethod
         def default(cls, position: int):
-            return cls(1)
+            return cls(0)
 
     def __init__(self, weight_function, _random_seed: bytes = None) -> None:
         # steps of simulation so far

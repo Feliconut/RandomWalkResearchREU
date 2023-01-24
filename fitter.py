@@ -42,4 +42,3 @@ class BetaFitter:
         plt.plot(self.x, self.func_beta(self.x, *self.params), label='fit')
         plt.plot(self.x, self.func_beta(self.x, self.last_guess), label='guess')
         plt.legend(loc='best')
-        plt.show()
