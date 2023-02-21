@@ -4,13 +4,27 @@ import numpy as np
 import pandas as pd
 import multiprocessing
 import matplotlib.pyplot as plt
+from math import pi
 from collections import OrderedDict
 from collections import Counter
 from experiment import MultipleExperiment
 
 
-class BetaFitter:
+def wc(x, a):
+    return scipy.stats.wrapcauchy.cdf(x, a, scale=0.5 / pi)
+
+
+def beta(x, a):
+    return scipy.stats.beta.cdf(x, a, a)
+
+
+class MultiFitter:
     def __init__(self, data):
+        self.distributions = {
+            'beta': beta,
+            'wc': wc,
+        }
+
         self.og_data = data
         self.data = OrderedDict(sorted(Counter(data).items()))
         self.x = np.asarray(list(self.data.keys()), dtype=np.float32)
@@ -22,28 +36,26 @@ class BetaFitter:
         if self.x[-1] == 1:
             self.y[-1] = 1
 
-        self.output = None
-        self.params = None
-        self.params_cov = None
-        self.last_guess = None
+        self.current_cdf = None
+        self.output = {}
+        self.params = {}
 
-    @staticmethod
-    def func_beta(x, a):
-        return scipy.stats.beta.cdf(x, a, a)
+    def calc_residuals(self, a):
+        return self.y - self.current_cdf(self.x, a)
 
-    def func_beta_residuals(self, a):
-        return self.y - self.func_beta(self.x, a)
+    def fit(self, method):
+        for key, dist in self.distributions.items():
+            self.current_cdf = dist
+            self.output[key] = scipy.optimize.least_squares(self.calc_residuals, 0.5, method=method)
+            self.params[key] = self.output[key].x
 
-    def fit(self, p0, method):
-        self.last_guess = p0[0]
-        self.output = scipy.optimize.least_squares(self.func_beta_residuals, p0, method=method)
-        self.params = self.output.x
-
-    def plot(self, bins):
+    def plot(self):
         plt.plot(self.x, self.y)
-        plt.plot(self.x, self.func_beta(self.x, *self.params), label='fit')
-        plt.plot(self.x, self.func_beta(self.x, self.last_guess), label='guess')
-        plt.legend(loc='best')
+
+        for key, dist in self.distributions.items():
+            plt.plot(self.x, dist(self.x, *self.params[key]), label=key)
+
+        plt.legend()
 
 
 def find_beta(alpha):
@@ -52,15 +64,15 @@ def find_beta(alpha):
 
     exp = MultipleExperiment(walk.SelfInteractingRandomWalk, n_trials=5000, length=1000, weight_function=wf)
     exp.run(store_data=False)
-    fitter = BetaFitter(exp.stats['ta0'])
-    fitter.fit([0.5], 'lm')
+    fitter = MultiFitter(exp.stats['ta0'])
+    fitter.fit('lm')
     print(f'Run with Alpha: {alpha} completed.')
-    return alpha, fitter.params[0]
+    return alpha, fitter.params['beta']
 
 
 if __name__ == '__main__':
-    alphas = np.linspace(1, 10, 100)
-    pool = multiprocessing.Pool(processes=10)
+    alphas = np.linspace(1, 15, 500)
+    pool = multiprocessing.Pool(processes=12)
     output = [0] * len(alphas)
 
     for i, alpha in enumerate(alphas):
