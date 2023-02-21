@@ -47,13 +47,13 @@ class MultiFitter:
         for key, dist in self.distributions.items():
             self.current_cdf = dist
             self.output[key] = scipy.optimize.least_squares(self.calc_residuals, 0.5, method=method)
-            self.params[key] = self.output[key].x
+            self.params[key] = self.output[key].x[0]
 
     def plot(self):
         plt.plot(self.x, self.y)
 
         for key, dist in self.distributions.items():
-            plt.plot(self.x, dist(self.x, *self.params[key]), label=key)
+            plt.plot(self.x, dist(self.x, self.params[key]), label=key)
 
         plt.legend()
 
@@ -71,7 +71,7 @@ def find_beta(alpha):
 
 
 if __name__ == '__main__':
-    alphas = np.linspace(1, 15, 500)
+    alphas = np.linspace(0, 20, 500)
     pool = multiprocessing.Pool(processes=12)
     output = [0] * len(alphas)
 
