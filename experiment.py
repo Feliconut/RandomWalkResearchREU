@@ -25,11 +25,11 @@ class MultipleExperiment():
     def new_walk(self) -> walk.RandomWalk:
         return self.walk_cls(*self.args, **self.kwargs)
 
-    def run(self, store_date=True):
+    def run(self, store_data=True):
         for i in range(self.n_trials):
             path = self.single_walk()
 
-            if store_date:
+            if store_data:
                 self.data[i] = path
 
         self.data = np.asarray(self.data).T
