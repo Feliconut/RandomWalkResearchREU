@@ -29,12 +29,14 @@ class MultiFitter:
         self.data = OrderedDict(sorted(Counter(data).items()))
         self.x = np.asarray(list(self.data.keys()), dtype=np.float32)
         self.y = np.cumsum(np.asarray(list(self.data.values()), dtype=np.float32) / len(data))
+        self.p = 0
 
         if self.x[0] == 0:
             self.y[0] = 0
 
         if self.x[-1] == 1:
             self.y[-1] = 1
+            self.p = 1 - self.y[-2]
 
         self.current_cdf = None
         self.output = {}
@@ -70,13 +72,24 @@ def find_beta(alpha):
     return alpha, fitter.params['beta']
 
 
+def find_p(length):
+    def wf(n):
+        return 1 / (1 + n) ** 10
+
+    exp = MultipleExperiment(walk.SelfInteractingRandomWalk, n_trials=1000, length=length, weight_function=wf)
+    exp.run(store_data=False)
+    fitter = MultiFitter(exp.stats['ta0'])
+    print(f'Run with N Trials: {length} completed.')
+    return length, fitter.p
+
+
 if __name__ == '__main__':
-    alphas = np.linspace(0, 20, 500)
+    alphas = [10, 100, 1000, 10000, 100000, 1000000]
     pool = multiprocessing.Pool(processes=12)
     output = [0] * len(alphas)
 
     for i, alpha in enumerate(alphas):
-        output[i] = (pool.apply_async(find_beta, args=[alpha]))
+        output[i] = (pool.apply_async(find_p, args=[alpha]))
 
     pool.close()
     pool.join()
